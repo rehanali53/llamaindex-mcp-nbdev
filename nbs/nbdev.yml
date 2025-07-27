@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "llamaindex-mcp-nbdev"
+  site-url: "https://rehanali53.github.io/llamaindex-mcp-nbdev"
+  description: "LlamaIndex MCP Server for SQLite Database Operations"
+  repo-branch: main
+  repo-url: "https://github.com/rehanali53/llamaindex-mcp-nbdev"
