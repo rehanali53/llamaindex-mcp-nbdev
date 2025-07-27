@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite MCP Server Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        h2 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: #343a40;
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .quick-actions button {
+            flex: 1;
+            font-size: 12px;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SQLite MCP Server Demo</h1>
+        <p class="subtitle">Interactive demo for LlamaIndex MCP Server</p>
+        
+        <div class="status disconnected" id="status">
+            Server Status: Checking connection...
+        </div>
+
+        <!-- Add Data Section -->
+        <div class="section">
+            <h2>Add Data</h2>
+            <div class="form-group">
+                <div class="input-row">
+                    <div>
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label for="age">Age:</label>
+                        <input type="number" id="age" placeholder="25" min="1" max="150">
+                    </div>
+                    <div>
+                        <label for="profession">Profession:</label>
+                        <input type="text" id="profession" placeholder="Developer">
+                    </div>
+                </div>
+                <button onclick="addData()" style="margin-top: 10px;">Add Person</button>
+            </div>
+            <div id="addResult" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- Query Data Section -->
+        <div class="section">
+            <h2>Query Data</h2>
+            <div class="quick-actions">
+                <button onclick="quickQuery('all')">Show All</button>
+                <button onclick="quickQuery('young')">Age < 30</button>
+                <button onclick="quickQuery('senior')">Age > 50</button>
+                <button onclick="quickQuery('count')">Count Records</button>
+            </div>
+            <div class="form-group">
+                <label for="query">Custom SQL Query:</label>
+                <textarea id="query" rows="3" placeholder="SELECT * FROM people WHERE age > 25">SELECT * FROM people</textarea>
+                <button onclick="queryData()" style="margin-top: 10px;">Execute Query</button>
+            </div>
+            <div id="queryResult" class="results" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Server configuration
+        const SERVER_URL = 'http://localhost:8000';
+        
+        // Check server status on load
+        window.onload = function() {
+            checkServerStatus();
+            // Auto-refresh data on load
+            queryData();
+        };
+
+        async function checkServerStatus() {
+            const statusEl = document.getElementById('status');
+            try {
+                const response = await fetch(`${SERVER_URL}/`);
+                statusEl.className = 'status connected';
+                statusEl.textContent = 'Server Status: Connected';
+            } catch (error) {
+                statusEl.className = 'status disconnected';
+                statusEl.textContent = 'Server Status: Not connected - Make sure the server is running on port 8000';
+            }
+        }
+
+        async function addData() {
+            const name = document.getElementById('name').value.trim();
+            const age = document.getElementById('age').value;
+            const profession = document.getElementById('profession').value.trim();
+            
+            const resultEl = document.getElementById('addResult');
+            resultEl.style.display = 'block';
+            
+            if (!name || !age || !profession) {
+                resultEl.className = 'results error';
+                resultEl.textContent = 'Error: All fields are required!';
+                return;
+            }
+
+            const query = `INSERT INTO people (name, age, profession) VALUES ('${name}', ${age}, '${profession}')`;
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/add_data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultEl.className = 'results success';
+                    resultEl.textContent = `Success! Added: ${name}, ${age} years old, ${profession}`;
+                    
+                    // Clear form
+                    document.getElementById('name').value = '';
+                    document.getElementById('age').value = '';
+                    document.getElementById('profession').value = '';
+                    
+                    // Refresh the query results
+                    queryData();
+                } else {
+                    resultEl.className = 'results error';
+                    resultEl.textContent = `Error: ${result.error || 'Failed to add data'}`;
+                }
+            } catch (error) {
+                resultEl.className = 'results error';
+                resultEl.textContent = `Error: Unable to connect to server. Make sure it's running.`;
+                console.error('Error:', error);
+            }
+        }
+
+        async function queryData() {
+            const query = document.getElementById('query').value.trim();
+            const resultEl = document.getElementById('queryResult');
+            resultEl.style.display = 'block';
+            
+            if (!query) {
+                resultEl.className = 'results error';
+                resultEl.textContent = 'Error: Query cannot be empty!';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SERVER_URL}/read_data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultEl.className = 'results info';
+                    
+                    if (result.data.length === 0) {
+                        resultEl.innerHTML = 'No records found.';
+                    } else {
+                        // Create table for results
+                        let html = `<strong>Found ${result.data.length} record(s):</strong><br><br>`;
+                        html += '<table><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Profession</th></tr></thead><tbody>';
+                        
+                        result.data.forEach(row => {
+                            html += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
+                        });
+                        
+                        html += '</tbody></table>';
+                        resultEl.innerHTML = html;
+                    }
+                } else {
+                    resultEl.className = 'results error';
+                    resultEl.textContent = `Error: ${result.error || 'Failed to query data'}`;
+                }
+            } catch (error) {
+                resultEl.className = 'results error';
+                resultEl.textContent = `Error: Unable to connect to server. Make sure it's running.`;
+                console.error('Error:', error);
+            }
+        }
+
+        function quickQuery(type) {
+            const queryEl = document.getElementById('query');
+            
+            switch(type) {
+                case 'all':
+                    queryEl.value = 'SELECT * FROM people';
+                    break;
+                case 'young':
+                    queryEl.value = 'SELECT * FROM people WHERE age < 30';
+                    break;
+                case 'senior':
+                    queryEl.value = 'SELECT * FROM people WHERE age > 50';
+                    break;
+                case 'count':
+                    queryEl.value = 'SELECT COUNT(*) as total FROM people';
+                    break;
+            }
+            
+            queryData();
+        }
+    </script>
+</body>
+</html>
