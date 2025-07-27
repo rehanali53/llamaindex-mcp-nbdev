@@ -14,4 +14,6 @@ d = { 'settings': { 'branch': 'main',
                                            'llamaindex_mcp_nbdev.core.SQLiteMCPServer.run': ( 'core.html#sqlitemcpserver.run',
                                                                                               'llamaindex_mcp_nbdev/core.py'),
                                            'llamaindex_mcp_nbdev.core.init_db': ('core.html#init_db', 'llamaindex_mcp_nbdev/core.py'),
-                                           'llamaindex_mcp_nbdev.core.main': ('core.html#main', 'llamaindex_mcp_nbdev/core.py')}}}
+                                           'llamaindex_mcp_nbdev.core.main': ('core.html#main', 'llamaindex_mcp_nbdev/core.py')},
+            'llamaindex_mcp_nbdev.server': { 'llamaindex_mcp_nbdev.server.run_server': ( 'server.html#run_server',
+                                                                                         'llamaindex_mcp_nbdev/server.py')}}}
