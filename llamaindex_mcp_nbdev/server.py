@@ -8,11 +8,7 @@ from llamaindex_mcp_nbdev.core import SQLiteMCPServer, main
 import argparse
 
 # %% ../nbs/01_server.ipynb 2
-#| eval: false
 # Server Script
 def run_server():
     """Run the MCP server with command line interface."""
     main()
-
-if __name__ == "__main__":
-    run_server()
