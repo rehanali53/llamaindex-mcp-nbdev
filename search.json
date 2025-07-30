@@ -1,0 +1,162 @@
+[
+  {
+    "objectID": "01_server.html",
+    "href": "01_server.html",
+    "title": "llamaindex-mcp-nbdev",
+    "section": "",
+    "text": "source\n\nrun_server\n\n run_server ()\n\nRun the MCP server with command line interface.\n\nif __name__ == \"__main__\":\n    run_server()",
+    "crumbs": [
+      "01_server.html"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "llamaindex-mcp-nbdev",
+    "section": "",
+    "text": "This file will become your README and also the index of your documentation.",
+    "crumbs": [
+      "llamaindex-mcp-nbdev"
+    ]
+  },
+  {
+    "objectID": "index.html#developer-guide",
+    "href": "index.html#developer-guide",
+    "title": "llamaindex-mcp-nbdev",
+    "section": "Developer Guide",
+    "text": "Developer Guide\nIf you are new to using nbdev here are some useful pointers to get you started.\n\nInstall llamaindex_mcp_nbdev in Development mode\n# make sure llamaindex_mcp_nbdev package is installed in development mode\n$ pip install -e .\n\n# make changes under nbs/ directory\n# ...\n\n# compile to have changes apply to llamaindex_mcp_nbdev\n$ nbdev_prepare",
+    "crumbs": [
+      "llamaindex-mcp-nbdev"
+    ]
+  },
+  {
+    "objectID": "index.html#usage",
+    "href": "index.html#usage",
+    "title": "llamaindex-mcp-nbdev",
+    "section": "Usage",
+    "text": "Usage\n\nInstallation\nInstall latest from the GitHub repository:\n$ pip install git+https://github.com/rehanali53/llamaindex-mcp-nbdev.git\nor from conda\n$ conda install -c rehanali53 llamaindex_mcp_nbdev\nor from pypi\n$ pip install llamaindex_mcp_nbdev\n\n\nDocumentation\nDocumentation can be found hosted on this GitHub repository’s pages. Additionally you can find package manager specific guidelines on conda and pypi respectively.",
+    "crumbs": [
+      "llamaindex-mcp-nbdev"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "llamaindex-mcp-nbdev",
+    "section": "How to use",
+    "text": "How to use\nFill me in please! Don’t forget code examples:\n\n1+1\n\n2",
+    "crumbs": [
+      "llamaindex-mcp-nbdev"
+    ]
+  },
+  {
+    "objectID": "chat_interface.html",
+    "href": "chat_interface.html",
+    "title": "Chat Interface",
+    "section": "",
+    "text": "source\n\nDatabaseChatbot\n\n DatabaseChatbot (db_path:str='demo.db', api_key:Optional[str]=None)\n\nSimple chatbot that can interact with SQLite database using natural language.\n\nsource\n\n\nsetup_sample_data\n\n setup_sample_data (db_path:str='demo.db')\n\nAdd sample data to database if empty.\n\nsource\n\n\nmain\n\n main ()\n\nMain entry point for chat interface.\n\n# Setup sample data\nprint(setup_sample_data())\n\n\n# Create chatbot instance\nchatbot = DatabaseChatbot(\"demo.db\")\n\n# Show current data\nprint(chatbot.show_sample_data())\n\n\n# Example: Add a new person\nresult = chatbot.add_person(\"John Doe\", 30, \"Data Scientist\")\nprint(result)\n\n\n# Example: Natural language query (requires OpenAI API key)\nif os.environ.get(\"OPENAI_API_KEY\"):\n    response = chatbot.query_database(\"What's the average age of developers?\")\n    print(response)\nelse:\n    print(\"Set OPENAI_API_KEY to test natural language queries\")",
+    "crumbs": [
+      "Chat Interface"
+    ]
+  },
+  {
+    "objectID": "02_testing.html",
+    "href": "02_testing.html",
+    "title": "llamaindex-mcp-nbdev",
+    "section": "",
+    "text": "import sqlite3\nimport os\nimport tempfile\nfrom llamaindex_mcp_nbdev.core import SQLiteMCPServer, init_db\n\n\n# Test Database Operations\ndef test_database_operations():\n    \"\"\"Test database initialization and operations.\"\"\"\n    # Use temporary database for testing\n    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:\n        db_path = tmp.name\n    \n    try:\n        # Test database initialization\n        conn, cursor = init_db(db_path)\n        \n        # Test table creation\n        cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table' AND name='people'\")\n        tables = cursor.fetchall()\n        assert len(tables) == 1, \"People table should be created\"\n        \n        # Test data insertion\n        cursor.execute(\"INSERT INTO people (name, age, profession) VALUES ('Test User', 25, 'Tester')\")\n        conn.commit()\n        \n        # Test data retrieval\n        cursor.execute(\"SELECT * FROM people\")\n        results = cursor.fetchall()\n        assert len(results) == 1, \"Should have one record\"\n        assert results[0][1] == 'Test User', \"Name should match\"\n        \n        conn.close()\n        print(\"Database operations test passed!\")\n        \n    finally:\n        # Clean up\n        if os.path.exists(db_path):\n            os.unlink(db_path)\n\n# Run test\ntest_database_operations()\n\n\n# Test MCP Server\ndef test_mcp_server():\n    \"\"\"Test MCP server initialization.\"\"\"\n    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:\n        db_path = tmp.name\n    \n    try:\n        # Test server creation\n        server = SQLiteMCPServer('test-server', db_path)\n        assert server.db_path == db_path, \"Database path should be set\"\n        assert server.mcp is not None, \"MCP instance should be created\"\n        assert hasattr(server.mcp, 'tool'), \"MCP should have tool decorator\"\n        \n        # Test database initialization\n        conn, cursor = init_db(db_path)\n        cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table' AND name='people'\")\n        tables = cursor.fetchall()\n        assert len(tables) == 1, \"People table should be created\"\n        conn.close()\n        \n        print(\"MCP server test passed!\")\n        \n    finally:\n        # Clean up\n        if os.path.exists(db_path):\n            os.unlink(db_path)\n\n# Run test\ntest_mcp_server()",
+    "crumbs": [
+      "02_testing.html"
+    ]
+  },
+  {
+    "objectID": "core.html",
+    "href": "core.html",
+    "title": "core",
+    "section": "",
+    "text": "source\n\ninit_db\n\n init_db (db_path:str='demo.db')\n\n*Initialize SQLite database and create people table if it doesn’t exist.\nArgs: db_path (str): Path to SQLite database file\nReturns: Tuple[sqlite3.Connection, sqlite3.Cursor]: Database connection and cursor*\n\n# Test the database initialization\nconn, cursor = init_db('test.db')\nprint(\"Database initialized successfully\")\nconn.close()\n\n\nsource\n\n\nSQLiteMCPServer\n\n SQLiteMCPServer (server_name:str='sqlite-demo', db_path:str='demo.db')\n\nMCP Server for SQLite database operations.\n\n# Test the MCP server setup\nserver = SQLiteMCPServer('test-server', 'test.db')\nprint(\"MCP Server created successfully\")\nprint(f\"Server instance: {type(server.mcp).__name__}\")\nprint(f\"Database path: {server.db_path}\")\n\n\nsource\n\n\nmain\n\n main ()\n\nMain function to run the MCP server with command line arguments.\n\n# Example usage demonstration\nif __name__ == \"__main__\":\n    # Create server instance\n    server = SQLiteMCPServer('demo-server', 'demo.db')\n    \n    # You can test the tools directly here\n    # Note: In production, tools are called by MCP clients\n    print(\"Server setup complete!\")\n    print(\"To run server: python -m llamaindex_mcp_project.server\")",
+    "crumbs": [
+      "core"
+    ]
+  },
+  {
+    "objectID": "llamaindex_integration.html",
+    "href": "llamaindex_integration.html",
+    "title": "LlamaIndex Integration",
+    "section": "",
+    "text": "source\n\n\n\n LlamaIndexSQLServer (server_name:str='llamaindex-sqlite',\n                      db_path:str='demo.db',\n                      openai_api_key:Optional[str]=None)\n\nExtended MCP Server with LlamaIndex natural language query capabilities.",
+    "crumbs": [
+      "LlamaIndex Integration"
+    ]
+  },
+  {
+    "objectID": "llamaindex_integration.html#basic-text-to-sql-query-engine",
+    "href": "llamaindex_integration.html#basic-text-to-sql-query-engine",
+    "title": "LlamaIndex Integration",
+    "section": "",
+    "text": "source\n\n\n\n LlamaIndexSQLServer (server_name:str='llamaindex-sqlite',\n                      db_path:str='demo.db',\n                      openai_api_key:Optional[str]=None)\n\nExtended MCP Server with LlamaIndex natural language query capabilities.",
+    "crumbs": [
+      "LlamaIndex Integration"
+    ]
+  },
+  {
+    "objectID": "llamaindex_integration.html#query-examples-and-capabilities",
+    "href": "llamaindex_integration.html#query-examples-and-capabilities",
+    "title": "LlamaIndex Integration",
+    "section": "Query Examples and Capabilities",
+    "text": "Query Examples and Capabilities\n\nsource\n\nget_sample_queries\n\n get_sample_queries ()\n\nGet sample natural language queries for demonstration.",
+    "crumbs": [
+      "LlamaIndex Integration"
+    ]
+  },
+  {
+    "objectID": "llamaindex_integration.html#standalone-query-function",
+    "href": "llamaindex_integration.html#standalone-query-function",
+    "title": "LlamaIndex Integration",
+    "section": "Standalone Query Function",
+    "text": "Standalone Query Function\n\nsource\n\nquery_database_nl\n\n query_database_nl (question:str, db_path:str='demo.db')\n\n*Query SQLite database using natural language.\nArgs: question: Natural language question db_path: Path to SQLite database\nReturns: Dictionary with answer and generated SQL*",
+    "crumbs": [
+      "LlamaIndex Integration"
+    ]
+  },
+  {
+    "objectID": "llamaindex_integration.html#demo-functions",
+    "href": "llamaindex_integration.html#demo-functions",
+    "title": "LlamaIndex Integration",
+    "section": "Demo Functions",
+    "text": "Demo Functions\n\n# Test database setup\ndef setup_test_data(db_path: str = \"test_llama.db\"):\n    \"\"\"Create test database with sample data.\"\"\"\n    conn, cursor = init_db(db_path)\n    \n    # Clear existing data\n    cursor.execute(\"DELETE FROM people\")\n    \n    # Insert test data\n    test_data = [\n        (\"Alice Johnson\", 28, \"Developer\"),\n        (\"Bob Smith\", 35, \"Engineer\"),\n        (\"Carol Davis\", 42, \"Manager\"),\n        (\"David Wilson\", 23, \"Developer\"),\n        (\"Eve Brown\", 31, \"Designer\"),\n        (\"Frank Miller\", 45, \"Engineer\"),\n        (\"Grace Lee\", 29, \"Developer\"),\n        (\"Henry Taylor\", 38, \"Manager\"),\n        (\"Iris Chen\", 26, \"Designer\"),\n        (\"Jack White\", 52, \"Engineer\")\n    ]\n    \n    cursor.executemany(\n        \"INSERT INTO people (name, age, profession) VALUES (?, ?, ?)\",\n        test_data\n    )\n    \n    conn.commit()\n    conn.close()\n    \n    print(f\"Test database created with {len(test_data)} records\")\n\n# Create test database\nsetup_test_data()\n\n\n# Demonstrate natural language queries (requires API key)\nif LLAMAINDEX_AVAILABLE:\n    print(\"LlamaIndex is available!\")\n    print(\"\\nTo use natural language queries, you need to:\")\n    print(\"1. Set OPENAI_API_KEY environment variable\")\n    print(\"2. Or pass openai_api_key parameter when creating server\")\n    print(\"\\nExample queries you can ask:\")\n    for query in get_sample_queries()[:5]:\n        print(f\"- {query}\")\nelse:\n    print(\"LlamaIndex not installed. Install with:\")\n    print(\"pip install llama-index llama-index-llms-openai\")",
+    "crumbs": [
+      "LlamaIndex Integration"
+    ]
+  },
+  {
+    "objectID": "llamaindex_integration.html#usage-examples",
+    "href": "llamaindex_integration.html#usage-examples",
+    "title": "LlamaIndex Integration",
+    "section": "Usage Examples",
+    "text": "Usage Examples\n\nsource\n\nmain\n\n main ()\n\nRun LlamaIndex-enabled MCP server.",
+    "crumbs": [
+      "LlamaIndex Integration"
+    ]
+  },
+  {
+    "objectID": "web_demo.html",
+    "href": "web_demo.html",
+    "title": "Web Demo",
+    "section": "",
+    "text": "source",
+    "crumbs": [
+      "Web Demo"
+    ]
+  },
+  {
+    "objectID": "web_demo.html#testing-the-api-endpoints",
+    "href": "web_demo.html#testing-the-api-endpoints",
+    "title": "Web Demo",
+    "section": "Testing the API endpoints",
+    "text": "Testing the API endpoints\n\n# Test database initialization\ntest_conn, test_cursor = init_db('test_web.db')\ntest_cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table' AND name='people'\")\nassert test_cursor.fetchone() is not None, \"People table should exist\"\ntest_conn.close()\nprint(\"Database initialization test passed!\")",
+    "crumbs": [
+      "Web Demo"
+    ]
+  }
+]
